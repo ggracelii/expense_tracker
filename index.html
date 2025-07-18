@@ -60,16 +60,13 @@
           }
         }
 
-        console.log("Total this month:", total);
-
         const percent = Math.min(1, total / BUDGET);
         const dash = percent * 439.8;
         const progress = document.getElementById("progress");
 
         progress.setAttribute("stroke-dasharray", `${dash}, 439.8`);
         progress.setAttribute("stroke", total > BUDGET ? "#e74c3c" : "#2ecc71");
-
-        document.getElementById("amountText").innerText = `$${total.toFixed(2)} / $${BUDGET}`;
+        
       } catch (err) {
         document.getElementById("amountText").innerText = "Error loading data";
         console.error("Error loading from Google Sheets:", err);
