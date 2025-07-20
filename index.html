@@ -1,230 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Expense Tracker</title>
-  <style>
-    body {
-      font-family: Georgia, 'Times New Roman', serif;
-      text-align: center;
-      margin: 0;
-      padding: 2em;
-      background: #fdfdfd;
+<script>
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwV1KyUWGYKY9xlG2Mnk9MJ-Msvc4xounWa20HGrJgMqfQ5D-xKhmeagEWnkuKinsfyvA/exec";
+
+  document.getElementById("expenseForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const titleInput = document.getElementById("title");
+    const amountInput = document.getElementById("amount");
+    const categorySelect = document.getElementById("category");
+
+    const title = titleInput.value.trim();
+    const amount = parseFloat(amountInput.value);
+    const category = categorySelect.value;
+
+    if (!title || isNaN(amount) || !category) return;
+
+    const data = { title, amount, category };
+
+    try {
+      await fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors", // CORS workaround
+        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json" }
+      });
+
+      // Clear form fields
+      titleInput.value = "";
+      amountInput.value = "";
+      categorySelect.value = "";
+
+      // Refresh UI (even if response can't be read due to no-cors)
+      loadExpenses();
+    } catch (err) {
+      alert("Error submitting expense.");
+      console.error(err);
     }
-    .amount {
-      font-size: 1.5em;
-      margin-bottom: 1em;
-    }
-    #formRow {
-      display: flex;
-      justify-content: center;
-      gap: 1em;
-      flex-wrap: wrap;
-    }
-    input[type="text"], select {
-      padding: 0.5em;
-      font-size: 1em;
-      width: 140px;
-      font-family: Georgia, 'Times New Roman', serif;
-    }
-    input[type="number"] {
-      padding: 0.5em;
-      font-size: 1em;
-      width: 60px;
-      font-family: Georgia, 'Times New Roman', serif;
-    }
-    button {
-      margin-top: 1em;
-      padding: 0.6em 1.2em;
-      font-size: 1em;
-      font-family: Georgia, 'Times New Roman', serif;
-      background-color: #228B22;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #1e7e1e;
-    }
-    #piechart {
-      width: 400px;
-      height: 280px;
-    }
-    #mainDisplay {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 3em;
-      flex-wrap: wrap;
-      margin-bottom: 2em;
-    }
-    #noDataMessage {
-      font-size: 1.2em;
-      color: #666;
-      margin-top: 1em;
-      font-family: Georgia, 'Times New Roman', serif;
-    }
-    .circle-title {
-      font-size: 1.4em;
-      margin-bottom: 0.5em;
-      font-weight: bold;
-    }
-    svg {
-      margin: 1em 0;
-    }
-  </style>
-</head>
-<body>
-  <div id="mainDisplay">
-    <!-- Pie Chart -->
-    <div>
-      <div id="piechart"></div>
-      <div id="noDataMessage" style="display: none;">No data for the month yet!</div>
-    </div>
-
-    <!-- Circular progress -->
-    <div>
-      <div class="circle-title">This Month’s Spending</div>
-      <svg width="180" height="180">
-        <circle r="70" cx="90" cy="90" fill="none" stroke="#eee" stroke-width="15" />
-        <circle id="progress" r="70" cx="90" cy="90" fill="none" stroke="#2ecc71" stroke-width="15"
-                stroke-dasharray="0, 439.8" />
-      </svg>
-      <div class="amount" id="amountText">$0.00 / $500</div>
-    </div>
-  </div>
-
-  <form id="expenseForm">
-    <div id="formRow">
-      <input type="text" id="title" placeholder="Title" required />
-      <input type="number" id="amount" placeholder="$" step="0.01" required />
-      <select id="category" required>
-        <option value="">Category</option>
-        <option>Health</option>
-        <option>Grocery</option>
-        <option>Dining</option>
-        <option>Shopping</option>
-        <option>Education</option>
-        <option>Transportation</option>
-        <option>Miscellaneous</option>
-      </select>
-    </div>
-    <button type="submit">Add Expense</button>
-  </form>
-
-  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-  <script>
-    const SHEET_ID = "1UXdVbuPoOW24XmWqIgAen_HF31ogp8K2929mhv2l_dE";
-    const API_KEY = "AIzaSyATvY1tbWE-B59gWnxRFT9LdUWLgT1MMQc";
-    const SHEET_NAME = "Sheet1";
-    const BUDGET = 500;
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwV1KyUWGYKY9xlG2Mnk9MJ-Msvc4xounWa20HGrJgMqfQ5D-xKhmeagEWnkuKinsfyvA/exec";
-
-    google.charts.load('current', { packages: ['corechart'] });
-
-    async function loadExpenses() {
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
-      try {
-        const res = await fetch(url);
-        const json = await res.json();
-        const rows = json.values;
-        if (!rows || rows.length <= 1) return;
-
-        let total = 0;
-        const now = new Date();
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const categoryTotals = {};
-
-        for (let i = 1; i < rows.length; i++) {
-          const [title, amountStr, category, dateStr] = rows[i];
-          const date = new Date(dateStr);
-          const amount = parseFloat(amountStr);
-          if (!isNaN(date) && date >= startOfMonth && !isNaN(amount)) {
-            total += amount;
-            if (!categoryTotals[category]) categoryTotals[category] = 0;
-            categoryTotals[category] += amount;
-          }
-        }
-
-        const percent = Math.min(1, total / BUDGET);
-        const dash = percent * 439.8;
-        const progress = document.getElementById("progress");
-        progress.setAttribute("stroke-dasharray", `${dash}, 439.8`);
-        progress.setAttribute("stroke", total > BUDGET ? "#e74c3c" : "#2ecc71");
-        document.getElementById("amountText").innerText = `$${total.toFixed(2)} / $${BUDGET}`;
-
-        const piechartEl = document.getElementById("piechart");
-        const noDataEl = document.getElementById("noDataMessage");
-
-        if (total === 0) {
-          piechartEl.innerHTML = "";
-          piechartEl.style.display = "none";
-          noDataEl.style.display = "block";
-        } else {
-          piechartEl.style.display = "block";
-          noDataEl.style.display = "none";
-          drawPieChart(categoryTotals);
-        }
-
-      } catch (err) {
-        document.getElementById("amountText").innerText = "Error loading data";
-        console.error("Error loading from Google Sheets:", err);
-      }
-    }
-
-    function drawPieChart(categoryData) {
-      const chartData = [['Category', 'Amount']];
-      for (const [category, amount] of Object.entries(categoryData)) {
-        chartData.push([category, amount]);
-      }
-
-      const data = google.visualization.arrayToDataTable(chartData);
-      const options = {
-        title: 'Spending by Category',
-        legend: { position: 'right', textStyle: { fontSize: 13, fontName: 'Georgia' } },
-        pieHole: 0.3,
-        pieSliceTextStyle: { fontName: 'Georgia', fontSize: 14 },
-        titleTextStyle: { fontName: 'Georgia', fontSize: 16 },
-        chartArea: { width: '90%', height: '80%' }
-      };
-
-      const chart = new google.visualization.PieChart(document.getElementById('piechart'));
-      chart.draw(data, options);
-    }
-
-    document.getElementById("expenseForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const title = document.getElementById("title").value.trim();
-      const amount = parseFloat(document.getElementById("amount").value);
-      const category = document.getElementById("category").value;
-
-      if (!title || isNaN(amount) || !category) return;
-
-      const data = { title, amount, category };
-
-      try {
-        const res = await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify(data),
-          headers: { "Content-Type": "application/json" }
-        });
-
-        const result = await res.json();
-        if (result.result === "success") {
-          document.getElementById("expenseForm").reset();
-          loadExpenses();
-        } else {
-          alert("Failed to add expense.");
-        }
-      } catch (err) {
-        alert("Error submitting expense.");
-        console.error(err);
-      }
-    });
-
-    loadExpenses();
-  </script>
-</body>
-</html>
+  });
+</script>
