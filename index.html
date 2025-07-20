@@ -12,7 +12,7 @@
       padding: 2em;
       background: #fdfdfd;
     }
-    .circular-progress svg {
+    svg {
       transform: rotate(-90deg);
       margin: 1em 0;
     }
@@ -20,27 +20,48 @@
       font-size: 1.5em;
       margin-bottom: 1em;
     }
-    form {
-      margin: 2em auto;
-      max-width: 300px;
+    #formRow {
       display: flex;
-      flex-direction: column;
+      justify-content: center;
       gap: 1em;
+      flex-wrap: wrap;
     }
-    input, select, button {
+    input[type="text"], select {
       padding: 0.5em;
       font-size: 1em;
+      width: 140px;
       font-family: Georgia, 'Times New Roman', serif;
     }
+    input[type="number"] {
+      padding: 0.5em;
+      font-size: 1em;
+      width: 60px;
+      font-family: Georgia, 'Times New Roman', serif;
+    }
+    button {
+      margin-top: 1em;
+      padding: 0.6em 1.2em;
+      font-size: 1em;
+      font-family: Georgia, 'Times New Roman', serif;
+      background-color: #228B22;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #1e7e1e;
+    }
     #piechart {
-      font-family: Georgia, 'Times New Roman', serif !important;
+      width: 400px;
+      height: 250px;
     }
   </style>
 </head>
 <body>
   <div style="display: flex; justify-content: center; align-items: center; gap: 3em; flex-wrap: wrap;">
     <!-- Circular progress -->
-    <div class="circular-progress">
+    <div>
       <svg width="180" height="180">
         <circle r="70" cx="90" cy="90" fill="none" stroke="#eee" stroke-width="15" />
         <circle id="progress" r="70" cx="90" cy="90" fill="none" stroke="#2ecc71" stroke-width="15"
@@ -50,22 +71,24 @@
     </div>
 
     <!-- Pie Chart -->
-    <div id="piechart" style="width: 300px; height: 250px;"></div>
+    <div id="piechart"></div>
   </div>
 
   <form id="expenseForm">
-    <input type="text" id="title" placeholder="Title" required />
-    <input type="number" id="amount" placeholder="Amount" step="0.01" required />
-    <select id="category" required>
-      <option value="">Select Category</option>
-      <option>Health</option>
-      <option>Grocery</option>
-      <option>Dining</option>
-      <option>Shopping</option>
-      <option>Education</option>
-      <option>Transportation</option>
-      <option>Miscellaneous</option>
-    </select>
+    <div id="formRow">
+      <input type="text" id="title" placeholder="Title" required />
+      <input type="number" id="amount" placeholder="$" step="0.01" required />
+      <select id="category" required>
+        <option value="">Category</option>
+        <option>Health</option>
+        <option>Grocery</option>
+        <option>Dining</option>
+        <option>Shopping</option>
+        <option>Education</option>
+        <option>Transportation</option>
+        <option>Miscellaneous</option>
+      </select>
+    </div>
     <button type="submit">Add Expense</button>
   </form>
 
@@ -128,10 +151,11 @@
       const data = google.visualization.arrayToDataTable(chartData);
       const options = {
         title: 'Spending by Category',
-        legend: { position: 'right' },
+        legend: { position: 'right', textStyle: { fontSize: 13, fontName: 'Georgia' } },
         pieHole: 0.3,
         pieSliceTextStyle: { fontName: 'Georgia', fontSize: 14 },
-        titleTextStyle: { fontName: 'Georgia', fontSize: 16 }
+        titleTextStyle: { fontName: 'Georgia', fontSize: 16 },
+        chartArea: { width: '90%', height: '80%' }
       };
 
       const chart = new google.visualization.PieChart(document.getElementById('piechart'));
