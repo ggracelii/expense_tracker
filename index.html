@@ -34,12 +34,20 @@
   </style>
 </head>
 <body>
-  <svg width="180" height="180">
-    <circle r="70" cx="90" cy="90" fill="none" stroke="#eee" stroke-width="15" />
-    <circle id="progress" r="70" cx="90" cy="90" fill="none" stroke="#2ecc71" stroke-width="15"
-            stroke-dasharray="0, 439.8" />
-  </svg>
-  <div class="amount" id="amountText">$0.00 / $500</div>
+  <div style="display: flex; justify-content: center; align-items: center; gap: 3em; flex-wrap: wrap;">
+    <!-- Circular progress -->
+    <div>
+      <svg width="180" height="180">
+        <circle r="70" cx="90" cy="90" fill="none" stroke="#eee" stroke-width="15" />
+        <circle id="progress" r="70" cx="90" cy="90" fill="none" stroke="#2ecc71" stroke-width="15"
+                stroke-dasharray="0, 439.8" />
+      </svg>
+      <div class="amount" id="amountText">$0.00 / $500</div>
+    </div>
+
+    <!-- Pie Chart -->
+    <div id="piechart" style="width: 300px; height: 250px;"></div>
+  </div>
 
   <form id="expenseForm">
     <input type="text" id="title" placeholder="Title" required />
@@ -57,12 +65,16 @@
     <button type="submit">Add Expense</button>
   </form>
 
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
   <script>
     const SHEET_ID = "1UXdVbuPoOW24XmWqIgAen_HF31ogp8K2929mhv2l_dE";
     const API_KEY = "AIzaSyATvY1tbWE-B59gWnxRFT9LdUWLgT1MMQc";
     const SHEET_NAME = "Sheet1";
     const BUDGET = 500;
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwV1KyUWGYKY9xlG2Mnk9MJ-Msvc4xounWa20HGrJgMqfQ5D-xKhmeagEWnkuKinsfyvA/exec"; // ← replace this
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwV1KyUWGYKY9xlG2Mnk9MJ-Msvc4xounWa20HGrJgMqfQ5D-xKhmeagEWnkuKinsfyvA/exec";
+
+    google.charts.load('current', { packages: ['corechart'] });
 
     async function loadExpenses() {
       const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
@@ -75,6 +87,7 @@
         let total = 0;
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const categoryTotals = {};
 
         for (let i = 1; i < rows.length; i++) {
           const [title, amountStr, category, dateStr] = rows[i];
@@ -82,51 +95,64 @@
           const amount = parseFloat(amountStr);
           if (!isNaN(date) && date >= startOfMonth && !isNaN(amount)) {
             total += amount;
+            if (!categoryTotals[category]) categoryTotals[category] = 0;
+            categoryTotals[category] += amount;
           }
         }
 
         const percent = Math.min(1, total / BUDGET);
         const dash = percent * 439.8;
         const progress = document.getElementById("progress");
-
         progress.setAttribute("stroke-dasharray", `${dash}, 439.8`);
         progress.setAttribute("stroke", total > BUDGET ? "#e74c3c" : "#2ecc71");
-
         document.getElementById("amountText").innerText = `$${total.toFixed(2)} / $${BUDGET}`;
+
+        drawPieChart(categoryTotals);
+
       } catch (err) {
         document.getElementById("amountText").innerText = "Error loading data";
         console.error("Error loading from Google Sheets:", err);
       }
     }
 
+    function drawPieChart(categoryData) {
+      const chartData = [['Category', 'Amount']];
+      for (const [category, amount] of Object.entries(categoryData)) {
+        chartData.push([category, amount]);
+      }
+
+      const data = google.visualization.arrayToDataTable(chartData);
+      const options = {
+        title: 'Spending by Category',
+        legend: { position: 'right' },
+        pieHole: 0.3,
+      };
+
+      const chart = new google.visualization.PieChart(document.getElementById('piechart'));
+      chart.draw(data, options);
+    }
+
     document.getElementById("expenseForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-
       const title = document.getElementById("title").value.trim();
       const amount = parseFloat(document.getElementById("amount").value);
       const category = document.getElementById("category").value;
 
       if (!title || isNaN(amount) || !category) return;
 
-      const data = {
-        title,
-        amount,
-        category
-      };
+      const data = { title, amount, category };
 
       try {
         const res = await fetch(SCRIPT_URL, {
           method: "POST",
           body: JSON.stringify(data),
-          headers: {
-            "Content-Type": "application/json"
-          }
+          headers: { "Content-Type": "application/json" }
         });
 
         const result = await res.json();
         if (result.result === "success") {
           document.getElementById("expenseForm").reset();
-          loadExpenses(); // refresh progress
+          loadExpenses();
         } else {
           alert("Failed to add expense.");
         }
@@ -139,4 +165,3 @@
     loadExpenses();
   </script>
 </body>
-</html>
