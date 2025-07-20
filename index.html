@@ -12,7 +12,7 @@
       padding: 2em;
       background: #fdfdfd;
     }
-    svg {
+    svg.progress-circle {
       transform: rotate(-90deg);
       margin: 1em 0;
     }
@@ -53,8 +53,8 @@
       background-color: #1e7e1e;
     }
     #piechart {
-      width: 400px;
-      height: 250px;
+      width: 450px;
+      height: 280px;
     }
   </style>
 </head>
@@ -62,7 +62,7 @@
   <div style="display: flex; justify-content: center; align-items: center; gap: 3em; flex-wrap: wrap;">
     <!-- Circular progress -->
     <div>
-      <svg width="180" height="180">
+      <svg class="progress-circle" width="180" height="180">
         <circle r="70" cx="90" cy="90" fill="none" stroke="#eee" stroke-width="15" />
         <circle id="progress" r="70" cx="90" cy="90" fill="none" stroke="#2ecc71" stroke-width="15"
                 stroke-dasharray="0, 439.8" />
