@@ -30,6 +30,7 @@
     input, select, button {
       padding: 0.5em;
       font-size: 1em;
+      font-family: Georgia, 'Times New Roman', serif;
     }
   </style>
 </head>
@@ -126,6 +127,7 @@
         title: 'Spending by Category',
         legend: { position: 'right' },
         pieHole: 0.3,
+        fontName: 'Georgia',
       };
 
       const chart = new google.visualization.PieChart(document.getElementById('piechart'));
@@ -134,9 +136,13 @@
 
     document.getElementById("expenseForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const title = document.getElementById("title").value.trim();
-      const amount = parseFloat(document.getElementById("amount").value);
-      const category = document.getElementById("category").value;
+      const titleInput = document.getElementById("title");
+      const amountInput = document.getElementById("amount");
+      const categorySelect = document.getElementById("category");
+
+      const title = titleInput.value.trim();
+      const amount = parseFloat(amountInput.value);
+      const category = categorySelect.value;
 
       if (!title || isNaN(amount) || !category) return;
 
@@ -145,12 +151,16 @@
       try {
         await fetch(SCRIPT_URL, {
           method: "POST",
-          mode: "no-cors", // Required to avoid CORS errors from Google Apps Script
+          mode: "no-cors",
           body: JSON.stringify(data),
           headers: { "Content-Type": "application/json" }
         });
 
-        document.getElementById("expenseForm").reset();
+        // Clear form
+        titleInput.value = "";
+        amountInput.value = "";
+        categorySelect.value = "";
+
         loadExpenses();
       } catch (err) {
         alert("Error submitting expense.");
