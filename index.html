@@ -4,37 +4,36 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Expense Tracker</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: Georgia, 'Times New Roman', serif;
       text-align: center;
       margin: 0;
       padding: 2em;
       background: #fdfdfd;
     }
-    svg { transform: rotate(-90deg); margin-bottom: 1em; }
-    .amount { font-size: 1.5em; margin-bottom: 2em; }
-    form { margin-bottom: 2em; }
-    input, select {
-      margin: 0.5em;
+    svg {
+      transform: rotate(-90deg);
+      margin: 1em 0;
+    }
+    .amount {
+      font-size: 1.5em;
+      margin-bottom: 1em;
+    }
+    form {
+      margin: 2em auto;
+      max-width: 300px;
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+    }
+    input, select, button {
       padding: 0.5em;
       font-size: 1em;
     }
-    button {
-      padding: 0.5em 1em;
-      font-size: 1em;
-      background: #3498db;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    canvas { margin-top: 2em; max-width: 400px; }
   </style>
 </head>
 <body>
-
   <svg width="180" height="180">
     <circle r="70" cx="90" cy="90" fill="none" stroke="#eee" stroke-width="15" />
     <circle id="progress" r="70" cx="90" cy="90" fill="none" stroke="#2ecc71" stroke-width="15"
@@ -44,9 +43,9 @@
 
   <form id="expenseForm">
     <input type="text" id="title" placeholder="Title" required />
-    <input type="number" id="amount" placeholder="Amount" required />
+    <input type="number" id="amount" placeholder="Amount" step="0.01" required />
     <select id="category" required>
-      <option value="">Category</option>
+      <option value="">Select Category</option>
       <option>Health</option>
       <option>Grocery</option>
       <option>Dining</option>
@@ -58,22 +57,24 @@
     <button type="submit">Add Expense</button>
   </form>
 
-  <canvas id="pieChart"></canvas>
-
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwV1KyUWGYKY9xlG2Mnk9MJ-Msvc4xounWa20HGrJgMqfQ5D-xKhmeagEWnkuKinsfyvA/exec";
+    const SHEET_ID = "1UXdVbuPoOW24XmWqIgAen_HF31ogp8K2929mhv2l_dE";
+    const API_KEY = "AIzaSyATvY1tbWE-B59gWnxRFT9LdUWLgT1MMQc";
+    const SHEET_NAME = "Sheet1";
     const BUDGET = 500;
-    let chart;
-    const categoryTotals = {};
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwV1KyUWGYKY9xlG2Mnk9MJ-Msvc4xounWa20HGrJgMqfQ5D-xKhmeagEWnkuKinsfyvA/exec"; // ← replace this
 
     async function loadExpenses() {
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
       try {
-        const res = await fetch(SCRIPT_URL);
-        const rows = await res.json();
+        const res = await fetch(url);
+        const json = await res.json();
+        const rows = json.values;
+        if (!rows || rows.length <= 1) return;
+
         let total = 0;
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        Object.keys(categoryTotals).forEach(k => categoryTotals[k] = 0);
 
         for (let i = 1; i < rows.length; i++) {
           const [title, amountStr, category, dateStr] = rows[i];
@@ -81,60 +82,58 @@
           const amount = parseFloat(amountStr);
           if (!isNaN(date) && date >= startOfMonth && !isNaN(amount)) {
             total += amount;
-            if (!categoryTotals[category]) categoryTotals[category] = 0;
-            categoryTotals[category] += amount;
           }
         }
 
         const percent = Math.min(1, total / BUDGET);
         const dash = percent * 439.8;
         const progress = document.getElementById("progress");
+
         progress.setAttribute("stroke-dasharray", `${dash}, 439.8`);
         progress.setAttribute("stroke", total > BUDGET ? "#e74c3c" : "#2ecc71");
-        document.getElementById("amountText").innerText = `$${total.toFixed(2)} / $${BUDGET}`;
-        updatePieChart();
-      } catch (err) {
-        console.error("Error loading data:", err);
-      }
-    }
 
-    function updatePieChart() {
-      const ctx = document.getElementById("pieChart").getContext("2d");
-      const labels = Object.keys(categoryTotals).filter(k => categoryTotals[k] > 0);
-      const data = labels.map(k => categoryTotals[k]);
-      if (chart) chart.destroy();
-      chart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels,
-          datasets: [{
-            label: "Spending by Category",
-            data,
-            backgroundColor: [
-              "#f39c12", "#2ecc71", "#3498db", "#9b59b6", "#e67e22", "#1abc9c", "#95a5a6"
-            ]
-          }]
-        },
-        options: {
-          plugins: { legend: { position: 'bottom' } }
-        }
-      });
+        document.getElementById("amountText").innerText = `$${total.toFixed(2)} / $${BUDGET}`;
+      } catch (err) {
+        document.getElementById("amountText").innerText = "Error loading data";
+        console.error("Error loading from Google Sheets:", err);
+      }
     }
 
     document.getElementById("expenseForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const title = document.getElementById("title").value;
-      const amount = document.getElementById("amount").value;
+
+      const title = document.getElementById("title").value.trim();
+      const amount = parseFloat(document.getElementById("amount").value);
       const category = document.getElementById("category").value;
 
-      await fetch(SCRIPT_URL, {
-        method: "POST",
-        body: JSON.stringify({ title, amount, category }),
-        headers: { "Content-Type": "application/json" }
-      });
+      if (!title || isNaN(amount) || !category) return;
 
-      document.getElementById("expenseForm").reset();
-      await loadExpenses();
+      const data = {
+        title,
+        amount,
+        category
+      };
+
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify(data),
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+
+        const result = await res.json();
+        if (result.result === "success") {
+          document.getElementById("expenseForm").reset();
+          loadExpenses(); // refresh progress
+        } else {
+          alert("Failed to add expense.");
+        }
+      } catch (err) {
+        alert("Error submitting expense.");
+        console.error(err);
+      }
     });
 
     loadExpenses();
