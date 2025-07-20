@@ -12,10 +12,6 @@
       padding: 2em;
       background: #fdfdfd;
     }
-    svg.progress-circle {
-      transform: rotate(-90deg);
-      margin: 1em 0;
-    }
     .amount {
       font-size: 1.5em;
       margin-bottom: 1em;
@@ -52,6 +48,10 @@
     button:hover {
       background-color: #1e7e1e;
     }
+    #piechart {
+      width: 400px;
+      height: 280px;
+    }
     #mainDisplay {
       display: flex;
       justify-content: center;
@@ -60,29 +60,34 @@
       flex-wrap: wrap;
       margin-bottom: 2em;
     }
-    #piechart {
-      width: 450px;
-      height: 280px;
-    }
     #noDataMessage {
-      font-family: Georgia, serif;
       font-size: 1.2em;
-      color: #999;
-      margin-top: 4em;
+      color: #666;
+      margin-top: 1em;
+      font-family: Georgia, 'Times New Roman', serif;
+    }
+    .circle-title {
+      font-size: 1.4em;
+      margin-bottom: 0.5em;
+      font-weight: bold;
+    }
+    svg {
+      margin: 1em 0;
     }
   </style>
 </head>
 <body>
   <div id="mainDisplay">
     <!-- Pie Chart -->
-    <div id="piechartSection">
+    <div>
       <div id="piechart"></div>
       <div id="noDataMessage" style="display: none;">No data for the month yet!</div>
     </div>
 
     <!-- Circular progress -->
     <div>
-      <svg class="progress-circle" width="180" height="180">
+      <div class="circle-title">This Month’s Spending</div>
+      <svg width="180" height="180">
         <circle r="70" cx="90" cy="90" fill="none" stroke="#eee" stroke-width="15" />
         <circle id="progress" r="70" cx="90" cy="90" fill="none" stroke="#2ecc71" stroke-width="15"
                 stroke-dasharray="0, 439.8" />
@@ -110,7 +115,6 @@
   </form>
 
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-
   <script>
     const SHEET_ID = "1UXdVbuPoOW24XmWqIgAen_HF31ogp8K2929mhv2l_dE";
     const API_KEY = "AIzaSyATvY1tbWE-B59gWnxRFT9LdUWLgT1MMQc";
@@ -144,7 +148,6 @@
           }
         }
 
-        // Progress Circle
         const percent = Math.min(1, total / BUDGET);
         const dash = percent * 439.8;
         const progress = document.getElementById("progress");
@@ -152,11 +155,11 @@
         progress.setAttribute("stroke", total > BUDGET ? "#e74c3c" : "#2ecc71");
         document.getElementById("amountText").innerText = `$${total.toFixed(2)} / $${BUDGET}`;
 
-        // Pie chart display logic
         const piechartEl = document.getElementById("piechart");
         const noDataEl = document.getElementById("noDataMessage");
 
-        if (Object.keys(categoryTotals).length === 0) {
+        if (total === 0) {
+          piechartEl.innerHTML = "";
           piechartEl.style.display = "none";
           noDataEl.style.display = "block";
         } else {
