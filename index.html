@@ -12,33 +12,32 @@
       padding: 2em;
       background: #fdfdfd;
     }
-
     .amount {
       font-size: 1.5em;
       margin-bottom: 1em;
     }
-
+    .circle-container {
+      transform: rotate(-90deg);
+      margin: 1em 0;
+    }
     #formRow {
       display: flex;
       justify-content: center;
       gap: 1em;
       flex-wrap: wrap;
     }
-
     input[type="text"], select {
       padding: 0.5em;
       font-size: 1em;
       width: 140px;
       font-family: Georgia, 'Times New Roman', serif;
     }
-
     input[type="number"] {
       padding: 0.5em;
       font-size: 1em;
       width: 60px;
       font-family: Georgia, 'Times New Roman', serif;
     }
-
     button {
       margin-top: 1em;
       padding: 0.6em 1.2em;
@@ -50,30 +49,36 @@
       border-radius: 5px;
       cursor: pointer;
     }
-
     button:hover {
       background-color: #1e7e1e;
     }
-
     #piechart {
       width: 400px;
-      height: 300px;
+      height: 250px;
+      position: relative;
+    }
+    #noDataMessage {
+      position: absolute;
+      width: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 1.2em;
+      color: #999;
     }
   </style>
 </head>
 <body>
   <div style="display: flex; justify-content: center; align-items: center; gap: 3em; flex-wrap: wrap;">
-    <!-- Pie Chart Left -->
-    <div>
-      <div style="font-weight: bold; font-family: Georgia, serif;">Spending by Category</div>
-      <div id="piechart"></div>
-      <div id="noDataMessage" style="font-family: Georgia, serif; color: #999;"></div>
+    <!-- Pie Chart -->
+    <div id="piechart">
+      <div id="noDataMessage" style="display:none;">No data for the month yet!</div>
     </div>
 
-    <!-- Circular Progress Right -->
+    <!-- Circular progress -->
     <div>
-      <div style="font-weight: bold; font-family: Georgia, serif; margin-bottom: 0.5em;">This Month’s Spending</div>
-      <svg width="180" height="180">
+      <div><strong>This Month’s Spending</strong></div>
+      <svg class="circle-container" width="180" height="180">
         <circle r="70" cx="90" cy="90" fill="none" stroke="#eee" stroke-width="15" />
         <circle id="progress" r="70" cx="90" cy="90" fill="none" stroke="#2ecc71" stroke-width="15"
                 stroke-dasharray="0, 439.8" />
@@ -117,9 +122,7 @@
         const json = await res.json();
         const rows = json.values;
         if (!rows || rows.length <= 1) {
-          document.getElementById("noDataMessage").innerText = "No data for the month yet!";
-          document.getElementById("amountText").innerText = "$0.00 / $500";
-          document.getElementById("progress").setAttribute("stroke-dasharray", `0, 439.8`);
+          showNoDataMessage();
           return;
         }
 
@@ -134,10 +137,11 @@
           const amount = parseFloat(amountStr);
           if (!isNaN(date) && date >= startOfMonth && !isNaN(amount)) {
             total += amount;
-            if (!categoryTotals[category]) categoryTotals[category] = 0;
-            categoryTotals[category] += amount;
+            categoryTotals[category] = (categoryTotals[category] || 0) + amount;
           }
         }
+
+        document.getElementById("noDataMessage").style.display = Object.keys(categoryTotals).length === 0 ? "block" : "none";
 
         const percent = Math.min(1, total / BUDGET);
         const dash = percent * 439.8;
@@ -147,12 +151,8 @@
         document.getElementById("amountText").innerText = `$${total.toFixed(2)} / $${BUDGET}`;
 
         if (Object.keys(categoryTotals).length > 0) {
-          document.getElementById("noDataMessage").innerText = "";
           drawPieChart(categoryTotals);
-        } else {
-          document.getElementById("noDataMessage").innerText = "No data for the month yet!";
         }
-
       } catch (err) {
         document.getElementById("amountText").innerText = "Error loading data";
         console.error("Error loading from Google Sheets:", err);
@@ -167,20 +167,27 @@
 
       const data = google.visualization.arrayToDataTable(chartData);
       const options = {
-        title: '',
+        title: 'Spending by Category',
         legend: { position: 'right', textStyle: { fontSize: 13, fontName: 'Georgia' } },
         pieHole: 0.3,
         pieSliceTextStyle: { fontName: 'Georgia', fontSize: 14 },
-        chartArea: { width: '100%', height: '80%' }
+        titleTextStyle: { fontName: 'Georgia', fontSize: 16 },
+        chartArea: { width: '90%', height: '80%' }
       };
 
       const chart = new google.visualization.PieChart(document.getElementById('piechart'));
       chart.draw(data, options);
     }
 
+    function showNoDataMessage() {
+      document.getElementById("noDataMessage").style.display = "block";
+      document.getElementById("amountText").innerText = "$0.00 / $500";
+      document.getElementById("progress").setAttribute("stroke-dasharray", `0, 439.8`);
+      document.getElementById("progress").setAttribute("stroke", "#2ecc71");
+    }
+
     document.getElementById("expenseForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-
       const titleInput = document.getElementById("title");
       const amountInput = document.getElementById("amount");
       const categorySelect = document.getElementById("category");
@@ -196,12 +203,11 @@
       try {
         await fetch(SCRIPT_URL, {
           method: "POST",
-          mode: "no-cors", // CORS workaround
+          mode: "no-cors",
           body: JSON.stringify(data),
           headers: { "Content-Type": "application/json" }
         });
 
-        // Clear form fields
         titleInput.value = "";
         amountInput.value = "";
         categorySelect.value = "";
