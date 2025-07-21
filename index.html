@@ -69,47 +69,54 @@
   </style>
 </head>
 <body>
- <div style="display: flex; flex-direction: column; align-items: center;">
-  <!-- Row with Pie Chart and Circular Progress -->
-  <div style="display: flex; align-items: flex-start; gap: 3em;">
-    <!-- Pie Chart -->
-    <div id="piechart" style="position: relative; width: 400px; height: 250px;">
-      <div id="noDataMessage" style="display: none; position: absolute; width: 100%; top: 50%; transform: translateY(-50%); font-family: Georgia, 'Times New Roman', serif; font-size: 1.2em; color: #999; text-align: center;">No data for the month yet!</div>
+<div style="padding-left: 2em;">
+  <div style="width: 650px;">
+    <!-- Row with Pie Chart and Circular Progress -->
+    <div style="display: flex; align-items: flex-start; gap: 3em;">
+      <!-- Pie Chart -->
+      <div id="piechart" style="position: relative; width: 400px; height: 250px;">
+        <div id="noDataMessage"
+             style="display: none; position: absolute; width: 100%; top: 50%; transform: translateY(-50%);
+                    font-family: Georgia, 'Times New Roman', serif; font-size: 1.2em; color: #999;
+                    text-align: center;">
+          No data for the month yet!
+        </div>
+      </div>
+
+      <!-- Circular Budget Progress -->
+      <div>
+        <div><strong>This Month’s Spending</strong></div>
+        <svg class="circle-container" width="180" height="180">
+          <circle r="70" cx="90" cy="90" fill="none" stroke="#eee" stroke-width="15" />
+          <circle id="progress" r="70" cx="90" cy="90" fill="none" stroke="#2ecc71" stroke-width="15"
+                  stroke-dasharray="0, 439.8" />
+        </svg>
+        <div class="amount" id="amountText">$0.00 / $500</div>
+      </div>
     </div>
 
-    <!-- Circular Budget Progress -->
-    <div>
-      <div><strong>This Month’s Spending</strong></div>
-      <svg class="circle-container" width="180" height="180">
-        <circle r="70" cx="90" cy="90" fill="none" stroke="#eee" stroke-width="15" />
-        <circle id="progress" r="70" cx="90" cy="90" fill="none" stroke="#2ecc71" stroke-width="15"
-                stroke-dasharray="0, 439.8" />
-      </svg>
-      <div class="amount" id="amountText">$0.00 / $500</div>
+    <!-- Centered Form under Charts -->
+    <div style="margin-top: 2em; display: flex; justify-content: center;">
+      <form id="expenseForm">
+        <div id="formRow">
+          <input type="text" id="title" placeholder="Title" required />
+          <input type="number" id="amount" placeholder="$" step="0.01" required />
+          <select id="category" required>
+            <option value="">Category</option>
+            <option>Health</option>
+            <option>Grocery</option>
+            <option>Dining</option>
+            <option>Shopping</option>
+            <option>Education</option>
+            <option>Transportation</option>
+            <option>Miscellaneous</option>
+          </select>
+        </div>
+        <div style="text-align: center;">
+          <button type="submit">Add Expense</button>
+        </div>
+      </form>
     </div>
-  </div>
-
-  <!-- Centered Form under Both Charts -->
-  <div style="margin-top: 2em; width: 600px;">
-    <form id="expenseForm">
-      <div id="formRow">
-        <input type="text" id="title" placeholder="Title" required />
-        <input type="number" id="amount" placeholder="$" step="0.01" required />
-        <select id="category" required>
-          <option value="">Category</option>
-          <option>Health</option>
-          <option>Grocery</option>
-          <option>Dining</option>
-          <option>Shopping</option>
-          <option>Education</option>
-          <option>Transportation</option>
-          <option>Miscellaneous</option>
-        </select>
-      </div>
-      <div style="text-align: center;">
-        <button type="submit">Add Expense</button>
-      </div>
-    </form>
   </div>
 </div>
 
