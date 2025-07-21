@@ -10,7 +10,7 @@
       text-align: left;
       margin: 0;
       padding: 2em;
-      background: #fdfdfd;
+      background: #f0f4ec;
     }
     .amount {
       font-size: 1.5em;
@@ -43,19 +43,20 @@
       padding: 0.6em 1.2em;
       font-size: 1em;
       font-family: Georgia, 'Times New Roman', serif;
-      background-color: #228B22;
+      background-color: #458262;
       color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;
     }
     button:hover {
-      background-color: #1e7e1e;
+      background-color: #3a6c53;
     }
     #piechart {
       width: 400px;
       height: 250px;
       position: relative;
+      background-color: #f0f4ec;
     }
     #noDataMessage {
       position: absolute;
@@ -162,7 +163,7 @@
         const dash = percent * 439.8;
         const progress = document.getElementById("progress");
         progress.setAttribute("stroke-dasharray", `${dash}, 439.8`);
-        progress.setAttribute("stroke", total > BUDGET ? "#e74c3c" : "#2ecc71");
+        progress.setAttribute("stroke", total > BUDGET ? "#e74c3c" : "#458262");
         document.getElementById("amountText").innerText = `$${total.toFixed(2)} / $${BUDGET}`;
 
         if (Object.keys(categoryTotals).length > 0) {
@@ -183,6 +184,7 @@
       const data = google.visualization.arrayToDataTable(chartData);
       const options = {
         title: 'Spending by Category',
+        backgroundColor: '#f0f4ec',
         legend: { position: 'right', textStyle: { fontSize: 13, fontName: 'Georgia' } },
         pieHole: 0.3,
         pieSliceTextStyle: { fontName: 'Georgia', fontSize: 14 },
@@ -198,7 +200,7 @@
       document.getElementById("noDataMessage").style.display = "block";
       document.getElementById("amountText").innerText = "$0.00 / $500";
       document.getElementById("progress").setAttribute("stroke-dasharray", `0, 439.8`);
-      document.getElementById("progress").setAttribute("stroke", "#2ecc71");
+      document.getElementById("progress").setAttribute("stroke", "#458262");
     }
 
     document.getElementById("expenseForm").addEventListener("submit", async (e) => {
