@@ -69,10 +69,9 @@
   </style>
 </head>
 <body>
-  <div style="margin: 0 auto; max-width: 1000px; padding: 1em 1.5em 4em 1.5em; text-align: left;"><div style="padding-left: 2em;">
-  <div style="width: 650px;">
-    <!-- Row with Pie Chart and Circular Progress -->
-    <div style="display: flex; align-items: flex-start; gap: 3em;">
+  <div style="display: flex; flex-direction: column; align-items: flex-start; padding: 2em;">
+    <!-- Charts Row -->
+    <div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 3em;">
       <!-- Pie Chart -->
       <div id="piechart" style="position: relative; width: 400px; height: 250px;">
         <div id="noDataMessage"
@@ -83,7 +82,7 @@
         </div>
       </div>
 
-      <!-- Circular Budget Progress -->
+      <!-- Budget Circle -->
       <div>
         <div><strong>This Month’s Spending</strong></div>
         <svg class="circle-container" width="180" height="180">
@@ -95,9 +94,9 @@
       </div>
     </div>
 
-    <!-- Centered Form under Charts -->
-    <div style="margin-top: 2em; display: flex; justify-content: center;">
-      <form id="expenseForm">
+    <!-- Form -->
+    <div style="margin-top: 2em; display: flex; justify-content: flex-start; width: 100%;">
+      <form id="expenseForm" style="display: flex; flex-direction: column; align-items: flex-start;">
         <div id="formRow">
           <input type="text" id="title" placeholder="Title" required />
           <input type="number" id="amount" placeholder="$" step="0.01" required />
@@ -112,13 +111,12 @@
             <option>Miscellaneous</option>
           </select>
         </div>
-        <div style="text-align: center;">
+        <div style="margin-top: 1em;">
           <button type="submit">Add Expense</button>
         </div>
       </form>
     </div>
   </div>
-</div>
 
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   <script>
