@@ -69,14 +69,15 @@
   </style>
 </head>
 <body>
-  <div style="padding-left: 2em;">
-  <div style="display: flex; justify-content: flex-start; align-items: flex-start; gap: 3em; flex-wrap: wrap;">
+  <div style="display: flex; flex-direction: column; align-items: flex-start; padding-left: 2em;">
+  <!-- Row with Pie Chart and Circular Progress -->
+  <div style="display: flex; align-items: flex-start; gap: 3em;">
     <!-- Pie Chart -->
-    <div id="piechart">
-      <div id="noDataMessage" style="display:none;">No data for the month yet!</div>
+    <div id="piechart" style="position: relative; width: 400px; height: 250px;">
+      <div id="noDataMessage" style="display: none; position: absolute; width: 100%; top: 50%; transform: translateY(-50%); font-family: Georgia, 'Times New Roman', serif; font-size: 1.2em; color: #999; text-align: center;">No data for the month yet!</div>
     </div>
 
-    <!-- Circular progress -->
+    <!-- Circular Budget Progress -->
     <div>
       <div><strong>This Month’s Spending</strong></div>
       <svg class="circle-container" width="180" height="180">
@@ -88,8 +89,8 @@
     </div>
   </div>
 
-  <!-- Centered Form -->
-  <div style="margin-top: 2em; display: flex; flex-direction: column; align-items: center;">
+  <!-- Centered Form under Both Charts -->
+  <div style="align-self: center; margin-top: 2em;">
     <form id="expenseForm">
       <div id="formRow">
         <input type="text" id="title" placeholder="Title" required />
