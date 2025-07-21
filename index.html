@@ -141,12 +141,12 @@
           showNoDataMessage();
           return;
         }
-
+    
         let total = 0;
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
         const categoryTotals = {};
-
+    
         for (let i = 1; i < rows.length; i++) {
           const [title, amountStr, category, dateStr] = rows[i];
           const date = new Date(dateStr);
@@ -156,16 +156,16 @@
             categoryTotals[category] = (categoryTotals[category] || 0) + amount;
           }
         }
-
+    
         document.getElementById("noDataMessage").style.display = Object.keys(categoryTotals).length === 0 ? "block" : "none";
-
+    
         const percent = Math.min(1, total / BUDGET);
         const dash = percent * 439.8;
         const progress = document.getElementById("progress");
         progress.setAttribute("stroke-dasharray", `${dash}, 439.8`);
-        progress.setAttribute("stroke", total > BUDGET ? "#e74c3c" : "#458262");
+        progress.setAttribute("stroke", total > BUDGET ? "#e74c3c" : "#458262"); // Red if over budget
         document.getElementById("amountText").innerText = `$${total.toFixed(2)} / $${BUDGET}`;
-
+    
         if (Object.keys(categoryTotals).length > 0) {
           drawPieChart(categoryTotals);
         }
@@ -173,6 +173,13 @@
         document.getElementById("amountText").innerText = "Error loading data";
         console.error("Error loading from Google Sheets:", err);
       }
+    }
+    
+    function showNoDataMessage() {
+      document.getElementById("noDataMessage").style.display = "block";
+      document.getElementById("amountText").innerText = "$0.00 / $500";
+      document.getElementById("progress").setAttribute("stroke-dasharray", `0, 439.8`);
+      document.getElementById("progress").setAttribute("stroke", "#458262");
     }
 
     function drawPieChart(categoryData) {
