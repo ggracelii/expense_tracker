@@ -69,7 +69,8 @@
   </style>
 </head>
 <body>
-  <div style="display: flex; justify-content: flex-start; align-items: flex-start; gap: 3em; flex-wrap: wrap; padding-left: 2em;">
+  <div style="padding-left: 2em;">
+  <div style="display: flex; justify-content: flex-start; align-items: flex-start; gap: 3em; flex-wrap: wrap;">
     <!-- Pie Chart -->
     <div id="piechart">
       <div id="noDataMessage" style="display:none;">No data for the month yet!</div>
@@ -87,7 +88,8 @@
     </div>
   </div>
 
-  <div style="text-align: left; padding-left: 2em; margin-top: 2em;">
+  <!-- Centered Form -->
+  <div style="margin-top: 2em; display: flex; flex-direction: column; align-items: center;">
     <form id="expenseForm">
       <div id="formRow">
         <input type="text" id="title" placeholder="Title" required />
@@ -103,9 +105,12 @@
           <option>Miscellaneous</option>
         </select>
       </div>
-      <button type="submit">Add Expense</button>
+      <div style="text-align: center;">
+        <button type="submit">Add Expense</button>
+      </div>
     </form>
   </div>
+</div>
 
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   <script>
