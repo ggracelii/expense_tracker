@@ -87,24 +87,25 @@
     </div>
   </div>
 
-  <form id="expenseForm">
-    <div style="text-align: left; padding-left: 2em; margin-top: 2em;">
-    <div id="formRow">
-      <input type="text" id="title" placeholder="Title" required />
-      <input type="number" id="amount" placeholder="$" step="0.01" required />
-      <select id="category" required>
-        <option value="">Category</option>
-        <option>Health</option>
-        <option>Grocery</option>
-        <option>Dining</option>
-        <option>Shopping</option>
-        <option>Education</option>
-        <option>Transportation</option>
-        <option>Miscellaneous</option>
-      </select>
-    </div>
-    <button type="submit">Add Expense</button>
-  </form>
+  <div style="text-align: left; padding-left: 2em; margin-top: 2em;">
+    <form id="expenseForm">
+      <div id="formRow">
+        <input type="text" id="title" placeholder="Title" required />
+        <input type="number" id="amount" placeholder="$" step="0.01" required />
+        <select id="category" required>
+          <option value="">Category</option>
+          <option>Health</option>
+          <option>Grocery</option>
+          <option>Dining</option>
+          <option>Shopping</option>
+          <option>Education</option>
+          <option>Transportation</option>
+          <option>Miscellaneous</option>
+        </select>
+      </div>
+      <button type="submit">Add Expense</button>
+    </form>
+  </div>
 
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   <script>
